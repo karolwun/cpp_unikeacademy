@@ -10,9 +10,8 @@ static const char *socket_path = "/tmp/socket";
 static const char *shmem_name = "shmem_ipc";
 static const char *sender_sem = "/sendersem";
 static const char *receiver_sem = "/receiversem";
-static const char *receiver_pid_path = "/tmp/rpid";
-static const char *sender_pid_path = "/tmp/rpid";
-#include<iostream>
+static const char *mq_name = "/mqname";
+
 class IPCSender
 {
 public:

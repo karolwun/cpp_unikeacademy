@@ -1,6 +1,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <fstream>
+#include <mqueue.h>
 #include <netinet/in.h>
 #include <semaphore.h>
 #include <signal.h>
@@ -154,25 +155,31 @@ void IPCSender::sendShmem()
 
 void IPCSender::sendMsgqueue()
 {
+    mq_attr attrs;
+    attrs.mq_maxmsg = 1;
+    attrs.mq_msgsize = 4096;
 
+    mqd_t mqd = mq_open(mq_name, O_CREAT | O_WRONLY, 0666, &attrs);
+    if (mqd == -1) {
+        throw runtime_error("mq_open error " + string(strerror(errno)));
+    }
+
+    const size_t buff_size = 4096;
+    char buff[buff_size];
+
+    ifstream ifs(file, ios::in | ios::binary);
+    while(true) {
+
+        size_t bytes_read = ifs.read(buff, buff_size).gcount();
+        if (mq_send(mqd, buff, bytes_read, 0) == -1) {
+            throw runtime_error("mq_send error " + string(strerror(errno)));
+        }
+
+        if (bytes_read == 0) {
+            break;
+        }
+    }
+
+    mq_close(mqd);
+    mq_unlink(mq_name);
 }
-// void IPCSender::sendSocket()
-// {
-//     ofstream ofs(sender_pid_path);
-//     ofs << getpid();
-//     ofs.close();
-
-//     ifstream ifs;
-//     while(1) {
-//         ifs.open(receiver_pid_path);
-//         if (ifs.good()) {
-//             break;
-//         }
-//         ifs.clear();
-//     }
-
-//     //signal(SIGUSR, )
-
-//     //int rv = kill(-1, SIGUSR1);
-//     //std::cout << rv << string(strerror(errno)) << std::endl;
-// }

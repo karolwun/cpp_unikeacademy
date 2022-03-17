@@ -1,6 +1,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <fstream>
+#include <mqueue.h>
 #include <semaphore.h>
 #include <stdexcept>
 #include <sys/mman.h>
@@ -139,5 +140,32 @@ void IPCReceiver::receiveShmem()
 
 void IPCReceiver::receiveMsgqueue()
 {
-    
+    mq_attr attrs;
+    attrs.mq_maxmsg = 1;
+    attrs.mq_msgsize = 4096;
+
+    mqd_t mqd = mq_open(mq_name, O_CREAT | O_RDONLY, 0666, &attrs);
+    if (mqd == -1) {
+        throw runtime_error("mq_open error " + string(strerror(errno)));
+    }
+
+    const size_t buff_size = 4096;
+    char buff[buff_size];
+
+    ofstream ofs(file, ios::out | ios::binary);
+    while(true) {
+        ssize_t bytes_received = mq_receive(mqd, buff, buff_size, 0);
+        if (bytes_received < 0) {
+            throw runtime_error("mq_send error " + string(strerror(errno)));
+        }
+
+        if (bytes_received == 0) {
+            break;
+        }
+
+        ofs.write(buff, bytes_received);
+    }
+
+    mq_close(mqd);
+    mq_unlink(mq_name);    
 }

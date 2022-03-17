@@ -15,7 +15,7 @@ int main(int argc, char **argv)
         print_help();
     }
 
-    IPCSender ipcSender(parsed_args.getIPCMethod(), parsed_args.getFile(), std::vector<std::string>());
+    IPCSender ipcSender(parsed_args.getIPCMethod(), parsed_args.getFile(), parsed_args.getParams());
     ipcSender.sendIPC();
     return 0;
 

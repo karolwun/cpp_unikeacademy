@@ -2,6 +2,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <netinet/in.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <stdexcept>
 #include <sys/mman.h>
@@ -25,6 +26,12 @@ void IPCSender::sendIPC()
     }
     else if (method == IPCMethod::socket) {
         sendSocket();
+    }
+    else if (method == IPCMethod::shmem) {
+        sendShmem();
+    }
+    else if (method == IPCMethod::msgqueue) {
+        sendMsgqueue();
     }
 }
 
@@ -86,37 +93,66 @@ void IPCSender::sendSocket()
     unlink(socket_path);
 }
 
-void IPCSender::sendshmem()
+void IPCSender::sendShmem()
 {
-    int fd = shm_open(shmem_name, O_RDWR, 0644);
+    int fd = shm_open(shmem_name, O_CREAT | O_RDWR, 0644);
     if (fd < 0) {
         throw runtime_error("Shm open error " + string(strerror(errno)));
-    }   
+    }
 
-	fprintf(stderr,"Shared Mem Descriptor: fd=%d\n", fd);
+    struct Shmem_control
+    {
+        size_t bytes_send;
+        bool finished;
+    };
 
-	assert (fd>0);
+    size_t data_size = stoi(params[0]);
+    size_t buff_size = data_size + sizeof(Shmem_control);
+    if (ftruncate(fd, buff_size) < 0) {
+        throw runtime_error("Shm truncate error " + string(strerror(errno)));
+    }
+    
+    char *region = static_cast<char*>(mmap(NULL, buff_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0));
+    if (region == MAP_FAILED) {
+        throw runtime_error("mmap error " + string(strerror(errno)));
+    }
+    Shmem_control *shm_ctrl = reinterpret_cast<Shmem_control *>(region + data_size);
 
-	struct stat sb;
+    sem_t *ssem = sem_open(sender_sem, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, 0);
+    if (ssem == SEM_FAILED) {
+        throw runtime_error("sender sem_open error " + string(strerror(errno)));
+    }
 
-	fstat(fd, &sb);
-	off_t length = sb.st_size ;
+    sem_t *rsem = sem_open(receiver_sem, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP, 0);
+    if (rsem == SEM_FAILED) {
+        throw runtime_error("sem_open error " + string(strerror(errno)));
+    }    
 
-	u_char *ptr = (u_char *) mmap(NULL, length, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    sem_post(ssem);
 
-	fprintf(stderr, "Shared Mem Address: %p [0..%lu]\n", ptr, length-1);
-	assert (ptr);
+    ifstream ifs(file, ios::in | ios::binary);
+    while(true) {
+        sem_wait(rsem);
 
-	// hexdump first 100 bytes
-	fprintf(stdout,"First 100 bytes:\n");
-	for(i=0; i<100; i++)
-		fprintf(stdout, "%02X%s", ptr[i], (i%25==24)?("\n"):(" ") );
+        size_t bytes_read = ifs.read(region, data_size).gcount();
+        shm_ctrl->bytes_send = bytes_read;
+        if (bytes_read == 0) {
+            shm_ctrl->finished = true;
+        }
 
-	// change 1st byte
-	ptr[ 0 ] = 'H' ;
+        sem_post(ssem);
+
+        if (bytes_read == 0) {
+            break;
+        }
+    }
+    sem_close(ssem);
+    sem_close(rsem);
+    sem_unlink(sender_sem);
+    shm_unlink(shmem_name);
 }
 
-void IPCSender::sendmsgqueue()
+void IPCSender::sendMsgqueue()
 {
 
 }

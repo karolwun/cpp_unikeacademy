@@ -8,9 +8,11 @@ enum class IPCMethod {NONE, pipe, shmem, socket, msgqueue};
 static const char *pipe_path = "/tmp/fifo";
 static const char *socket_path = "/tmp/socket";
 static const char *shmem_name = "shmem_ipc";
+static const char *sender_sem = "/sendersem";
+static const char *receiver_sem = "/receiversem";
 static const char *receiver_pid_path = "/tmp/rpid";
 static const char *sender_pid_path = "/tmp/rpid";
-
+#include<iostream>
 class IPCSender
 {
 public:
@@ -24,8 +26,8 @@ private:
 
     void sendPipe();
     void sendSocket();
-    void sendshmem();
-    void sendmsgqueue();
+    void sendShmem();
+    void sendMsgqueue();
 };
 
 class IPCReceiver
@@ -41,6 +43,6 @@ private:
 
     void receivePipe();
     void receiveSocket();
-    void sendshmem();
-    void sendmsgqueue();
+    void receiveShmem();
+    void receiveMsgqueue();
 };

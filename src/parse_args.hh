@@ -22,7 +22,7 @@ public:
             else if (args[i] == "--pipe") {
                 ipc_method = IPCMethod::pipe;
             }
-            else if (args[i] == "--shmem") {
+            else if (args[i] == "--shm") {
                 ipc_method = IPCMethod::shmem;
                 method_params.push_back(args[i+1]);
                 i++;
@@ -58,6 +58,11 @@ public:
     std::string getFile()
     {
         return file;
+    }
+
+    std::vector<std::string> getParams()
+    {
+        return method_params;
     }
 
 private:

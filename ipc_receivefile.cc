@@ -10,7 +10,7 @@ int main(int argc, char **argv)
         //print_help();
     }
 
-    IPCReceiver ipcReceiver(parsed_args.getIPCMethod(), parsed_args.getFile(), std::vector<std::string>());
+    IPCReceiver ipcReceiver(parsed_args.getIPCMethod(), parsed_args.getFile(), parsed_args.getParams());
     ipcReceiver.receive();
     return 0;
 }

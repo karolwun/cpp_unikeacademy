@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "ipc.hh"
+enum class IPCType {NONE, pipe, shmem, socket, msgqueue};
 
 class ParseArgs
 {
@@ -20,19 +20,19 @@ public:
                 i++;
             }
             else if (args[i] == "--pipe") {
-                ipc_method = IPCMethod::pipe;
+                ipc_type = IPCType::pipe;
             }
             else if (args[i] == "--shm") {
-                ipc_method = IPCMethod::shmem;
+                ipc_type = IPCType::shmem;
                 method_params.push_back(args[i+1]);
                 i++;
             }
             else if (args[i] == "--socket") {
-                ipc_method = IPCMethod::socket;
+                ipc_type = IPCType::socket;
 
             }
             else if (args[i] == "--msqqueue") {
-                ipc_method = IPCMethod::msgqueue;
+                ipc_type = IPCType::msgqueue;
             }
             else { // wrong argument
                 help = true;
@@ -40,7 +40,7 @@ public:
             }
         }
 
-        if(ipc_method == IPCMethod::NONE) {
+        if(ipc_type == IPCType::NONE) {
             help = true;
         }
     }
@@ -50,24 +50,24 @@ public:
         return help;
     }
 
-    IPCMethod getIPCMethod()
+    IPCType getIPCType() const
     {
-        return ipc_method;
+        return ipc_type;
     }
 
-    std::string getFile()
+    std::string getFile() const
     {
         return file;
     }
 
-    std::vector<std::string> getParams()
+    std::vector<std::string> getParams() const
     {
         return method_params;
     }
 
 private:
-    bool help;
-    IPCMethod ipc_method{};
+    bool help = false;
+    IPCType ipc_type = IPCType::NONE;
     std::string file;
     std::vector<std::string> method_params;
 };

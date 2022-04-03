@@ -5,7 +5,7 @@ using namespace std;
 IPCReceiver::IPCReceiver(std::unique_ptr<IPCMethod> method, string file): method(std::move(method))
 {
     ofile.open(file, ios::binary | ios::out);
-    ofile.exceptions(ifstream::failbit | ifstream::badbit);
+    ofile.exceptions(ifstream::badbit);
 }
 
 void IPCReceiver::receiveFile()

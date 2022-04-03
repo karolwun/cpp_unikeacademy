@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -13,6 +14,7 @@ public:
         for(unsigned i = 0; i < args.size(); i++) {
             if (args[i] == "--help") {
                 help = true;
+                clear();
                 break;
             }
             else if (args[i] == "--file") {
@@ -40,12 +42,13 @@ public:
             }
         }
 
-        if(ipc_type == IPCType::NONE) {
+        if(ipc_type == IPCType::NONE || file.empty()) {
             help = true;
+            clear();
         }
     }
 
-    bool isHelp()
+    bool isHelp() const
     {
         return help;
     }
@@ -58,11 +61,14 @@ public:
     std::string getFile() const
     {
         return file;
-    }
+    }   
 
-    std::vector<std::string> getParams() const
+    std::optional<std::vector<std::string>> getParams() const
     {
-        return method_params;
+        if (method_params.empty()) {
+            return std::nullopt;
+        }
+        return { method_params };
     }
 
 private:
@@ -70,4 +76,11 @@ private:
     IPCType ipc_type = IPCType::NONE;
     std::string file;
     std::vector<std::string> method_params;
+
+    void clear()
+    {
+        ipc_type = IPCType::NONE;
+        file = "";
+        method_params = {};
+    }    
 };

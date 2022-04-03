@@ -11,7 +11,7 @@ class IPCMethod
 public:
     virtual void sendPacket(const std::vector<char> & packet) = 0;
     virtual std::vector<char> receivePacket() = 0;
-    virtual size_t getMaxMsgSize() = 0;
+    virtual size_t getMaxMsgSize() const = 0;
     virtual ~IPCMethod() {}
 };
 
@@ -21,7 +21,7 @@ public:
     IPCPipe(size_t msg_size);
     virtual void sendPacket(const std::vector<char> & packet);
     virtual std::vector<char> receivePacket();
-    virtual size_t getMaxMsgSize();
+    virtual size_t getMaxMsgSize() const;
     virtual ~IPCPipe();
 
 private:
@@ -41,7 +41,7 @@ public:
     IPCMsqqueue(size_t msg_size);
     virtual void sendPacket(const std::vector<char> & packet);
     virtual std::vector<char> receivePacket();
-    virtual size_t getMaxMsgSize();
+    virtual size_t getMaxMsgSize() const;
     virtual ~IPCMsqqueue();
 
 private:
@@ -56,11 +56,12 @@ public:
     IPCSocket(size_t packet_size);
     virtual void sendPacket(const std::vector<char> & packet);
     virtual std::vector<char> receivePacket();
-    virtual size_t getMaxMsgSize();
+    virtual size_t getMaxMsgSize() const;
     virtual ~IPCSocket();
 
 private:
     static const std::string socket_path;
+    static const std::string server_sem_path;
     size_t packet_size;
     int sockfd = -1;
     bool server_running = false;
@@ -68,6 +69,7 @@ private:
 
     sockaddr_un serveraddr = {};
     int clientfd = -1;
+    sem_t *server_sem = nullptr;
 
     void runServer();
     void clientConnect();
@@ -79,7 +81,7 @@ public:
     IPCShmem(size_t buff_size);
     virtual void sendPacket(const std::vector<char> & packet);
     virtual std::vector<char> receivePacket();
-    virtual size_t getMaxMsgSize();
+    virtual size_t getMaxMsgSize() const;
     virtual ~IPCShmem();
 
 private:
@@ -87,8 +89,6 @@ private:
     static const std::string sender_sem_path;
     static const std::string receiver_sem_path;
     size_t buff_size;
-    bool receiver_notified = false;
-    bool sender_notified = false;
 
     struct Shmem_control
     {

@@ -17,6 +17,9 @@ void sendFile(const ParseArgs & args)
         IPCSender(std::make_unique<IPCPipe>(msg_size), args.getFile()).sendFile();
     }
     else if(args.getIPCType() == IPCType::shmem) {
+        if (args.getParams()) {
+            msg_size = std::stoul(args.getParams().value()[0]) * 1024; // Convert from kB into bytes.
+        }
         IPCSender(std::make_unique<IPCShmem>(msg_size), args.getFile()).sendFile();
     }
     else if(args.getIPCType() == IPCType::socket) {
@@ -43,8 +46,8 @@ int main(int argc, char **argv)
     }
     catch(...) {
         eptr = std::current_exception();
+        std::rethrow_exception(eptr);
     }
-    std::rethrow_exception(eptr);       
 
     return 0;
 }

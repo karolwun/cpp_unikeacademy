@@ -1,8 +1,9 @@
 cc_test(
   name = "test_cppcopyfile",
-  size = "small",
-  srcs = ["test_cppcopyfile.cc", "src/parse_args.hh", "src/ipc.hh"],
+  size = "medium",
+  srcs = glob(["test/*.cc", "src/*.hh", "src/*.cc"]),
   deps = ["@com_google_googletest//:gtest_main"],
+  linkopts= ["-lrt", "-pthread"],
 )
 
 cc_binary(

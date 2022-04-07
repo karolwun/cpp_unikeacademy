@@ -6,7 +6,8 @@
 
 void print_help()
 {
-    std::cout << "help \n";
+    std::cout << "Send file by IPC. \n";
+    std::cout << "usage: ipc_sendfile --file input_file [--pipe | --socket | --shm buff_size | --msqqueue] [--help] \n";
 }
 
 void sendFile(const ParseArgs & args)

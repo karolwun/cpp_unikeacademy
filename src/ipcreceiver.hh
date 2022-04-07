@@ -8,7 +8,7 @@
 class IPCReceiver
 {
 public:
-    IPCReceiver(std::unique_ptr<IPCMethod> method, std::string file);
+    IPCReceiver(std::unique_ptr<IPCMethod> method, const std::string & file);
 
     void receiveFile();
 

@@ -24,5 +24,7 @@ INSTANTIATE_TEST_CASE_P(ParserTests, ParserTestsP,
                             make_tuple(vector<string>{"--file", "k"}, true, "", IPCType::NONE, nullopt),
                             make_tuple(vector<string>{"--pipe"}, true, "", IPCType::NONE, nullopt),
                             make_tuple(vector<string>{"--pipe", "--file", "filename"}, false, "filename", IPCType::pipe, nullopt),
-                            make_tuple(vector<string>{"--shm", "4", "--file", "filename"}, false, "filename", IPCType::shmem, vector<string>{"4"})
+                            make_tuple(vector<string>{"--shm", "4", "--file", "filename"}, false, "filename", IPCType::shmem, vector<string>{"4"}),
+                            make_tuple(vector<string>{"--msqqueue", "--file", "filename"}, false, "filename", IPCType::msgqueue, nullopt),
+                            make_tuple(vector<string>{"--socket", "--file", "filename"}, false, "filename", IPCType::socket, nullopt)
                         ));

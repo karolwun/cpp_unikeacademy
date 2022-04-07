@@ -8,7 +8,7 @@
 class IPCSender
 {
 public:
-    IPCSender(std::unique_ptr<IPCMethod> method, std::string file);
+    IPCSender(std::unique_ptr<IPCMethod> method, const std::string & file);
 
     void sendFile();
 private:

@@ -2,10 +2,13 @@
 
 using namespace std;
 
-IPCSender::IPCSender(unique_ptr<IPCMethod> method, string file) : method(std::move(method)) 
+IPCSender::IPCSender(unique_ptr<IPCMethod> method, const string & file) : method(std::move(method)) 
 {
     message_size = this->method->getMaxMsgSize();
     ifile.open(file, ios::binary | ios::in);
+    if (!ifile) {
+        throw std::runtime_error("Can't open file: " + file);
+    }
     ifile.exceptions(ifstream::badbit);
 }
 

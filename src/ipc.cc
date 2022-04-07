@@ -14,7 +14,6 @@
 
 using namespace std;
 
-
 const std::string IPCPipe::pipe_path = "/tmp/fifo";
 
 IPCPipe::IPCPipe(size_t msg_size) : msg_size(msg_size)

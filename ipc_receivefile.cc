@@ -6,8 +6,10 @@
 
 void print_help()
 {
-    std::cout << "help \n";
+    std::cout << "Receive file by IPC. \n";
+    std::cout << "usage: ipc_receivefile --file output_file [--pipe | --socket | --shm buff_size | --msqqueue] [--help] \n";
 }
+
 
 void receiveFile(const ParseArgs & args)
 {
